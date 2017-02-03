@@ -30,18 +30,20 @@ https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/
 ###########################################################
 
 
-获取源码:
+wonder已经存在，获取源码:
 $git clone git@github.com:tongxm520/wonder.git
+#修改wonder下的文件
 $git add .
 $git commit -a -m "comment"
 $git push origin master
 ###########################################################
 
-git remote add origin git@github.com:tongxm520/Depot.git
-git push -u origin master
-
-
-
+-----------------------------------------------------------------
+cd Depot
+git init
+git add .
+git commit -a -m "all"
+git push origin master
 
 
 
