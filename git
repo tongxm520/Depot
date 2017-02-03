@@ -41,9 +41,9 @@ $git push origin master
 -----------------------------------------------------------------
 Create a new repository
 
-
 cd Depot
 git init
+git remote add origin git@github.com:tongxm520/Depot.git
 git add .
 git commit -a -m "all"
 git push origin master
