@@ -1,0 +1,7 @@
+Rails3 用 JQuery 替代 Prototype
+1.进入到工程目录中修改Gemfile文件，加入如下行：
+gem 'jquery-rails'
+
+2.执行rails generate命令：
+rails generate jquery:install --ui
+会下载JQuery和JQuery UI最新的Library，目前是1.5的版本。

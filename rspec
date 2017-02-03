@@ -1,0 +1,361 @@
+环境：
+ruby 2.2.2p95
+Rails 3.2.1
+
+简介：
+RSpec is a Behaviour-Driven Development tool for Ruby programmers. BDD is an approach to
+software development that combines Test-Driven Development, Domain Driven Design, and
+Acceptance Test-Driven Planning. RSpec helps you do the TDD part of that equation,
+focusing on the documentation and design aspects of TDD.
+
+RSpec是ruby程序设计中行为驱动测试(BDD)的工具。(BDD)是一种结合测试驱动开发，领域驱动设计，验收测试的软件
+开发方法。rspec更侧重于测试驱动开发中文档和设计部分。
+
+rails默认使用test/unit做为测试框架，那么如何使用Rspec呢？
+
+1. 安装RSpec相关的Gem包
+ 
+sudo gem install rspec-rails -v 2.8.0
+执行后，会自动安装相应的gem包：
+
+rspec (2.8.0)
+rspec-core (2.8.0)
+rspec-expectations (2.8.0)
+rspec-mocks (2.8.0)
+rspec-rails (2.8.0)
+
+2. 新建一个rails工程，打开Gemfile文件，在group中增加如下代码，注意添加：development，这段代码告
+诉Bundler我们需要在Rails中安装rspec-rails来运行RSpec
+
+group :test, :development do  
+  gem 'rspec-rails', '2.8.0'
+end  
+ 
+3. 最后，运行RSpec的生成器
+rails generate rspec:install  
+
+生成器创建了几个新文件，分别是：
+.rspec – 用于配置 rspec 命令行的配置文件，默认包含 – colour 来启用RSpec输出文字高亮。
+spec – 该目录用于存放所有模型变量，控制器，视图，和项目中其它的specs。
+spec/spec_helper.rb – 该文件会在每个spec执行时被调用。该文件设置了测试变量，并包含项目级别RSpec配置项，
+加载引用文件等等。
+
+
+4.此时运行： rails generate 你就会看到 rspece:install 这个生成器， 这是因为RSpec已经被注册为Rails的
+测试框架，所以当你在rails工程中生成models，controllers等时，RSpec就会取代Test::Unit
+
+支架生成MVC和rspec测试文件 
+script/generate rspec_scaffold user name:string
+使用rspec_scaffold 比原来的 scaffold 支架 仅仅是多了 rspec部分, 在rails project 中在 spec 文件夹下 
+
+测试:
+rake spec
+
+更多的关于spec的rake可以这样看下:
+rake -T spec
+
+或者 
+rspec spec/models/product_spec.rb
+
+$rake spec -h  
+rspec -h
+
+===========expect用should代替==========================================
+"Describe an order."
+"It sums the prices of its line items."
+
+RSpec.describe Order do
+  it "sums the prices of its line items" do
+    order = Order.new
+    order.add_entry(LineItem.new(:item => Item.new(
+      :price => Money.new(1.11, :USD)
+    )))
+    order.add_entry(LineItem.new(:item => Item.new(
+      :price => Money.new(2.22, :USD),
+      :quantity => 2
+    )))
+    expect(order.total).to eq(Money.new(5.55, :USD))
+  end
+end  
+  
+nested groups
+You can also declare nested nested groups using the describe or context methods:
+
+RSpec.describe Order do
+  context "with no items" do
+    it "behaves one way" do
+      # ...
+    end
+  end
+
+  context "with one item" do
+    it "behaves another way" do
+      # ...
+    end
+  end
+end
+
+require "rails_helper"
+
+RSpec.describe User, :type => :model do
+  it "orders by last name" do
+    lindeman = User.create!(first_name: "Andy", last_name: "Lindeman")
+    chelimsky = User.create!(first_name: "David", last_name: "Chelimsky")
+
+    expect(User.ordered_by_last_name).to eq([chelimsky, lindeman])
+  end
+end 
+  
+  
+RSpec.describe Post do
+  context "with 2 or more comments" do
+    it "orders them in reverse chronologically" do
+      post = Post.create!
+      comment1 = post.comments.create!(:body => "first comment")
+      comment2 = post.comments.create!(:body => "second comment")
+      expect(post.reload.comments).to eq([comment2, comment1])
+    end
+  end
+end  
+  
+=========================================================================  
+# RSpec Expectations
+
+[RSpec::Expectations](../RSpec/Expectations) lets you express expected outcomes
+on an object in an example.
+
+    account.balance.should eq(Money.new(37.42, :USD))
+
+## Install
+
+If you want to use rspec-expectations with rspec, just install the rspec gem
+and RubyGems will also install rspec-expectations for you (along with
+rspec-core and rspec-mocks):
+
+    gem install rspec
+
+If you want to use rspec-expectations with another tool, like Test::Unit,
+Minitest, or Cucumber, you can install it directly:
+
+    gem install rspec-expectations
+
+## Basic usage
+
+Here's an example using rspec-core:
+
+```ruby
+describe Order do
+  it "sums the prices of the items in its line items" do
+    order = Order.new
+    order.add_entry(LineItem.new(:item => Item.new(
+      :price => Money.new(1.11, :USD)
+    )))
+    order.add_entry(LineItem.new(:item => Item.new(
+      :price => Money.new(2.22, :USD),
+      :quantity => 2
+    )))
+    order.total.should eq(Money.new(5.55, :USD))
+  end
+end
+```
+
+The `describe` and `it` methods come from rspec-core.  The `Order`, `LineItem`,
+and `Item` classes would be from _your_ code. The last line of the example
+expresses an expected outcome. If `order.total == Money.new(5.55, :USD)`, then
+the example passes. If not, it fails with a message like:
+
+    expected: #<Money @value=5.55 @currency=:USD>
+         got: #<Money @value=1.11 @currency=:USD>
+
+## Built-in matchers
+
+### Equivalence
+
+```ruby
+actual.should eq(expected)  # passes if actual == expected
+actual.should == expected   # passes if actual == expected
+actual.should eql(expected) # passes if actual.eql?(expected)
+```
+
+### Identity
+
+```ruby
+actual.should be(expected)    # passes if actual.equal?(expected)
+actual.should equal(expected) # passes if actual.equal?(expected)
+```
+    
+### Comparisons
+
+```ruby
+actual.should be >  expected
+actual.should be >= expected
+actual.should be <= expected
+actual.should be <  expected
+actual.should be_within(delta).of(expected)
+```
+
+### Regular expressions
+
+```ruby
+actual.should =~ /expression/
+actual.should match(/expression/)
+```
+
+### Types/classes
+
+```ruby
+actual.should be_an_instance_of(expected)
+actual.should be_a_kind_of(expected)
+```
+
+### Truthiness
+
+```ruby
+actual.should be_true  # passes if actual is truthy (not nil or false)
+actual.should be_false # passes if actual is falsy (nil or false)
+actual.should be_nil   # passes if actual is nil
+```
+
+### Expecting errors
+
+```ruby
+expect { ... }.to raise_error
+expect { ... }.to raise_error(ErrorClass)
+expect { ... }.to raise_error("message")
+expect { ... }.to raise_error(ErrorClass, "message")
+```
+
+### Expecting throws
+
+```ruby
+expect { ... }.to throw_symbol
+expect { ... }.to throw_symbol(:symbol)
+expect { ... }.to throw_symbol(:symbol, 'value')
+```
+
+### Predicate matchers
+
+```ruby
+actual.should be_xxx         # passes if actual.xxx?
+actual.should have_xxx(:arg) # passes if actual.has_xxx?(:arg)
+```
+
+See [RSpec::Matchers](../RSpec/Matchers) for more about predicate matchers.
+
+### Ranges (Ruby >= 1.9 only)
+
+```ruby
+(1..10).should cover(3)
+```
+
+### Collection membership
+
+```ruby
+actual.should include(expected)
+```
+
+#### Examples
+
+```ruby
+[1,2,3].should include(1)
+[1,2,3].should include(1, 2)
+{:a => 'b'}.should include(:a => 'b')
+"this string".should include("is str")
+```
+
+## Learn more
+
+See [RSpec::Expectations](../RSpec/Expectations) for more information about
+`should` and `should_not` and how they work.
+
+See [RSpec::Matchers](../RSpec/Matchers) for more information about the
+built-in matchers that ship with rspec-expectations, and how to write your own
+custom matchers.
+
+## Also see
+
+* [http://github.com/rspec/rspec](http://github.com/rspec/rspec)
+* [http://github.com/rspec/rspec-core](http://github.com/rspec/rspec-core)
+* [http://github.com/rspec/rspec-mocks](http://github.com/rspec/rspec-mocks)
+
+
+-----------Expectations--- Built-in matchers
+
+Equivalence
+actual.should eq(expected) # passes if actual == expected
+actual.should == expected # passes if actual == expected
+actual.should eql(expected) # passes if actual.eql?(expected)
+actual.should equal(expected) # passes if actual.equal?(expected)
+actual.should === expected # passes if actual === expected
+
+
+Identity
+actual.should be(expected) # passes if actual.equal?(expected)
+
+
+
+Comparisons
+actual.should be > expected
+actual.should be >= expected
+actual.should be <= expected
+actual.should be < expected
+actual.should be_within(delta).of(expected)
+
+
+
+Regular expressions
+actual.should =~ /expression/
+actual.should match(/expression/)
+
+
+
+Types/classes
+actual.should be_an_instance_of(expected)
+actual.should be_a_kind_of(expected)
+
+
+
+Truthiness
+actual.should be_true # passes if actual is truthy (not nil or false)
+actual.should be_false # passes if actual is falsy (nil or false)
+actual.should be_nil # passes if actual is nil
+
+
+
+Expecting errors
+expect { ... }.to raise_error
+expect { ... }.to raise_error(ErrorClass)
+expect { ... }.to raise_error("message")
+expect { ... }.to raise_error(ErrorClass, "message")
+
+
+
+Expecting throws
+expect { ... }.to throw_symbol
+expect { ... }.to throw_symbol(:symbol)
+expect { ... }.to throw_symbol(:symbol, 'value')
+
+
+
+Predicate matchers
+actual.should be_xxx # passes if actual.xxx?
+actual.should have_xxx(:arg) # passes if actual.has_xxx?(:arg)
+
+
+
+Ranges (Ruby >= 1.9 only)
+(1..10).should cover(3)
+
+
+
+Collection membership
+actual.should include(expected)
+
+
+
+Examples
+[1,2,3].should include(1)
+[1,2,3].should include(1, 2)
+{:a => 'b'}.should include(:a => 'b')
+"this string".should include("is str")
+

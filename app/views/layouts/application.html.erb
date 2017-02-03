@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Depot</title>
+  <%= stylesheet_link_tag "application", :media => "all" %>
+  <%= javascript_include_tag "application" %>
+  <%= csrf_meta_tags %>
+</head>
+<body id="store">
+  <div id="banner">
+    <%= image_tag( "logo.png" ) %>
+    <%= @page_title || "Pragmatic Bookshelf" %>
+  </div>
+  <div id="columns">
+    <div id="side">
+      <%# if @cart %>
+        <%#= hidden_div_if(@cart.line_items.empty?, :id => "cart" ) do %>
+          <%#= render @cart %>
+        <%# end %>
+      <%# end %>
+      
+      <%if controller_name=="store"&&action_name=="index"%>
+        <div id="cart">
+          <%= render @cart %>
+        </div>
+      <%end%>
+      
+      <!--需要清理浮动-->
+      <div style="clear:both"></div>
+      
+      <%= link_to 'Home', store_path %><br />
+      <a href="http://www.baidu.com">Questions</a><br />
+      <a href="http://www.baidu.com">News</a><br />
+      <a href="http://www.baidu.com">Contact</a><br />
+      <% if session[:user_id] %>
+        <br />
+        <%= link_to 'Orders', orders_path %><br />
+        <%= link_to 'Products', products_path %><br />
+        <%= link_to 'Users', users_path %><br />
+        <br />
+        <%= button_to 'Logout', logout_path, :method => :delete %>
+      <% end %>
+    </div>
+    <div id="main">
+      <%= yield %>
+    </div>
+  </div>
+</body>
+<div id="dialog-confirm" title="确认对话框" style="display:none;">
+  <div id="confirm-imgs"><img src="/assets/tips.png" ></div>
+  <div id="dialog-confirm-content">These items will be permanently deleted and cannot be recovered. Are you sure?</div>
+</div>
+</html>

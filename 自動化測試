@@ -1,0 +1,358 @@
+https://ihower.tw/rails4/testing.html
+github: rspec test case
+軟體測試可以從不同層面去切入，其中最小的測試粒度叫做Unit Test單元測試，會對個別的類別和方法測試結果如預
+期。再大一點的粒度稱作Integration Test整合測試，測試多個元件之間的互動正確。最大的粒度則是Acceptance
+Test驗收測試，從用戶觀點來測試整個軟體。
+
+其中測試粒度小的單元測試，通常會由開發者自行負責測試，因為只有你自己清楚每個類別和方法的內部結構是怎麼設
+計的。而粒度大的驗收測試，則常由專門的測試工程師來負責，測試者不需要知道程式碼內部是怎麼實作的，只需知道
+什麼是系統應該做的事即可。
+
+本章的內容，就是關於我們如何撰寫自動化的測試程式，也就是寫程式去測試程式。很多人對於自動化測試的印象可能
+是：
+
+    佈署前作一次手動測試就夠了，不需要自動化
+    寫測試很無聊
+    測試很難寫
+    寫測試不好玩
+    我們沒有時間寫測試
+
+時程緊迫預算吃緊，哪來的時間做自動化測試呢？這個想法是相當短視和業餘的想法，寫測試有以下好處：
+
+    正確(Correctness)：確認你寫的程式的正確，結果如你所預期。一旦寫好測試程式，很容易就可以檢查程式有
+沒有寫對，大大減少自行除錯的時間。
+    穩定(Stability)：之後新加功能或改寫重構時，不會影響搞爛之前寫好的功能。這又叫作「回歸測試」，你不
+需要手動再去測其他部分的測試，你可以用之前寫好的測試程式。如果你的軟體不是那種跑一次就丟掉的程式，而是
+需要長期維護的產品，那就一定有回歸測試的需求。
+    設計(Design)：可以採用TDD開發方式，先寫測試再實作。這是寫測試的最佳時機點，實作的目的就是為了通過
+測試。從使用API的呼叫者的角度去看待程式，可以更關注在介面而設計出更好用的API。
+    文件(Documentation)：測試就是一種程式規格，程式的規格就是滿足測試條件。這也是為什麼RSpec稱為Spec
+的原因。不知道API怎麼呼叫使用時，可以透過讀測試程式知道怎麼使用。
+
+其中光是第一個好處，就值得你學習如何寫測試，來加速你的開發，怎麼說呢?回想你平常是怎麼確認你寫的程式正確
+的呢? 是不是在命令列中實際執行看看，或是打開瀏覽器看看結果，每次修改，就重新手動重新整理看看。這些步驟
+其實可以透過用自動化測試取代，大大節省手工測試的時間。這其實是一種投資，如果是簡單的程式，也許你手動
+執行一次就寫對了，但是如果是複雜的程式，往往第一次不會寫對，你會浪費很多時間在檢查到底你寫的程式的
+正確性，而寫測試就可以大大的節省這些時間。更不用說你明天，下個禮拜或下個月需要再確認其他程式有沒有
+副作用影響的時候，你有一組測試程式可以大大節省手動檢查的時間。
+
+那要怎麼進行自動化測試呢？幾乎每種語言都有一套叫做xUnit測試框架的測試工具，它的標準流程是
+1. (Setup) 設定測試資料
+2. (Exercise) 執行要測試的方法
+3. (Verify) 檢查結果是否正確
+4. (Teardown) 清理還原資料，例如資料庫，好讓多個測試不會互相影響。
+
+我們將使用RSpec來取代Rails預設的Test::Unit來做為我們測試的工具。RSpec是一套改良版的xUnit測試框架，
+非常風行於Rails社群。讓我們先來簡單比較看看它們的語法差異:
+
+這是一個Test::Unit範例，其中一個test_開頭的方法，就是一個單元測試，裡面的assert_equal方法會進行驗證。
+個別的單元測試應該是獨立不會互相影響的：
+
+class OrderTest < Test::Unit::TestCase
+  def setup
+    @order = Order.new
+  end
+
+  def test_order_status_when_initialized
+    assert_equal @order.status, "New"
+  end
+
+  def test_order_amount_when_initialized
+    assert_equal @order.amount, 0
+  end
+end
+
+以下是用RSpec語法改寫，其中的一個it區塊，就是一個單元測試，裡面的expect方法會進行驗證。
+在RSpec裡，我們又把一個小單元測試叫做example：
+
+describe Order do
+  before do
+    @order = Order.new
+  end
+
+  context "when initialized" do
+    it "should have default status is New" do
+      expect(@order.status).to eq("New")
+    end
+
+    it "should have default amount is 0" do
+      expect(@order.amount).to eq(0)
+    end
+  end
+end
+
+RSpec程式碼比起來更容易閱讀，也更像是一種規格Spec文件，且讓我們繼續介紹下去。
+RSpec簡介
+
+RSpec是一套Ruby的測試DSL(Domain-specific language)框架，它的程式比Test::Unit更好讀，
+寫的人更容易描述測試目的，可以說是一種可執行的規格文件。也 非常多的Ruby on Rails專案採用
+RSpec作為測試框架。它又稱為一種BDD(Behavior-driven development)測試框架，相較於TDD用
+test思維，測試程式的結果。BDD強調的是用spec思維，描述程式應該有什麼行為。
+安裝RSpec與RSpec-Rails
+
+在Gemfile中加入：
+
+group :test, :development do
+  gem "rspec-rails"
+end
+
+安裝：
+
+rails generate rspec:install
+
+這樣就會建立出spec目錄來放測試程式，本來的test目錄就用不著了。
+
+以下指令會執行所有放在spec目錄下的測試程式：
+rake spec
+
+如果要測試單一檔案，可以這樣：
+rspec spec/models/product_spec.rb
+
+語法介紹
+
+在示範怎麼在Rails中寫單元測試前，讓我們先介紹一些基本的RSpec用法：
+describe和context
+
+describe和context幫助你組織分類，都是可以任意套疊的。它的參數可以是一個類別，或是一個字串描述：
+
+describe Order do
+  describe "#amount" do
+    context "when user is vip" do
+     # ...
+    end
+
+   context "when user is not vip" do
+      # ...
+    end
+  end
+end
+
+通常最外層是我們想要測試的類別，然後下一層是哪一個方法，然後是不同的情境。
+it和expect
+
+每個it就是一小段測試，在裡面我們會用expect(…).to來設定期望，例如：
+
+describe Order do
+  describe "#amount" do
+    context "when user is vip" do
+
+      it "should discount five percent if total >= 1000" do
+        user = User.new( :is_vip => true )
+        order = Order.new( :user => user, :total => 2000 )
+        expect(order.amount).to eq(1900)
+      end
+
+      it "should discount ten percent if total >= 10000" { ... }
+
+    end
+
+    context "when user is vip" { ... }
+
+  end
+end
+
+除了expect(…).to，也有相反地expect(…).not_to可以用。
+before和after
+
+如同xUnit框架的setup和teardown：
+
+    before(:each) 每段it之前執行
+    before(:all) 整段describe前只執行一次
+    after(:each) 每段it之後執行
+    after(:all) 整段describe後只執行一次
+
+範例如下：
+
+describe Order do
+  describe "#amount" do
+    context "when user is vip" do
+
+      before(:each) do
+        @user = User.new( :is_vip => true )
+        @order = Order.new( :user => @user )
+      end
+
+      it "should discount five percent if total >= 1000" do
+        @order.total = 2000
+        expect(@order.amount).to eq(1900)
+      end
+
+      it "should discount ten percent if total >= 10000" do
+        @order.total = 10000
+        expect(@order.amount).to eq(9000)
+      end
+
+    end
+    context "when user is vip" { ... }
+  end
+end
+
+let 和 let!
+
+let可以用來簡化上述的before用法，並且支援lazy evaluation和memoized，也就是有需要才初始，
+並且不同單元測試之間，只會初始化一次，可以增加測試執行效率：
+
+describe Order do
+  describe "#amount" do
+    context "when user is vip" do
+
+      let(:user) { User.new( :is_vip => true ) }
+      let(:order) { Order.new( :user => @user ) }
+
+     end
+  end
+end
+
+透過let用法，可以比before更清楚看到誰是測試的主角，也不需要本來的@了。
+
+let!則會在測試一開始就先初始一次，而不是lazy evaluation。
+pending
+
+你可以先列出來預計要寫的測試，或是暫時不要跑的測試，以下都會被歸類成pending：
+
+describe Order do
+
+  describe "#paid?" do
+
+    it "should be false if status is new"
+
+    xit "should be true if status is paid or shipping" do
+      # this test will not be executed
+    end
+
+  end
+
+end
+
+specify 和 example
+
+specify和example都是it方法的同義字。
+Matcher
+
+上述的expect(…).to後面可以接各種Matcher，除了已經介紹過的eq之外，
+在 https://www.relishapp.com/rspec/rspec-expectations/docs/built-in-matchers 官方文件上
+可以看到更多用法。例如驗證會丟出例外：
+
+expect { ... }.to raise_error
+expect { ... }.to raise_error(ErrorClass)
+expect { ... }.to raise_error("message")
+expect { ... }.to raise_error(ErrorClass, "message")
+
+不過別擔心，一開始先學會用eq就很夠用了，其他的Matchers可以之後邊看邊學，學一招是一招。再進階一點你可以
+自己寫Matcher，RSpec有提供擴充的DSL。
+RSpec Mocks
+
+用假的物件替換真正的物件，作為測試之用。主要用途有：
+
+    無法控制回傳值的外部系統 (例如第三方的網路服務)
+    建構正確的回傳值很麻煩 (例如得準備很多假資料)
+    可能很慢，拖慢測試速度 (例如耗時的運算)
+    有難以預測的回傳值 (例如亂數方法)
+    還沒開始實作 (特別是採用TDD流程)
+
+Rails中的測試
+
+在Rails中，RSpec分成數種不同測試，分別是Model測試、Controller測試、View測試、
+Helper測試、Route和Request測試。
+安裝 Rspec-Rails
+
+在Gemfile中加上
+
+gem 'rspec-rails', :group => [:development, :test]
+
+執行以下指令：
+
+$ bundle
+$ rails g rspec:install
+
+如何處理Fixture
+
+Rails內建有Fixture功能可以建立假資料，方法是為每個Model使用一份YAML資料。Fixture的缺點是它是
+直接插入資料進資料庫而不使用ActiveRecord，對於複雜的Model資料建構或關連，會比較麻煩。因此推薦
+使用FactoryGirl這套工具，相較於Fixture的缺點是建構速度較慢，因此撰寫時最好能注意不要浪費時間
+在產生沒有用到的假資料。甚至有些資料其實不需要存到資料庫就可以進行單元測試了。
+
+關於測試資料最重要的一點是，記得確認每個測試案例之間的測試資料需要清除，Rails預設是用關聯式資
+料庫的Transaction功能，所以每次之間增修的資料都會清除。但是如果你的資料庫不支援
+(例如MySQL的MyISAM格式就不支援)或是用如MongoDB的NoSQL，那麼就要自己處理，推薦可以試試
+Database Clener這套工具。
+Capybara簡介
+
+RSpec除了可以拿來寫單元程式，我們也可以把測試的層級拉高做整合性測試，以Web應用程式來說，就是去自動化
+瀏覽器的操作，實際去向網站伺服器請求，然後驗證出來的HTML是正確的輸出。
+
+Capybara就是一套可以搭配的工具，用來模擬瀏覽器行為。使用範例如下：
+
+describe "the signup process", :type => :request do
+  it "signs me in" do
+    within("#session") do
+      fill_in 'Login', :with => 'user@example.com'
+      fill_in 'Password', :with => 'password'
+    end
+      click_link 'Sign in'
+    end
+end
+
+如果真的需要打開瀏覽器測試，例如需要測試JavaScript和Ajax介面，可以使用Selenium或Watir工具。
+真的打開瀏覽器測試的缺點是測試比較耗時，你沒辦法像單元測試一樣可以經常執行得到回饋。
+另外在設定CI server上也較麻煩，你必須另有一台桌面作業系統才能執行。
+其他可以搭配測試工具
+
+Guard是一種Continuous Testing的工具。程式一修改完存檔，自動跑對應的測試。可以大大節省時間，立即回饋。
+
+Shoulda提供了更多Rails的專屬Matchers
+
+SimpleCov用來測試涵蓋度，也就是告訴你哪些程式沒有測試到。有些團隊會追求100%涵蓋率是很好，
+不過要記得Coverage只是手段，不是測試的目的。
+CI server
+
+CI(Continuous Integration)伺服器的用處是每次有人Commit就會自動執行編譯及測試(Ruby不用編譯，
+所以主要的用處是跑測試)，並回報結果，如果有人送交的程式搞砸了回歸測試，馬上就有回饋可以知道。
+推薦第三方的服務包括：
+
+    https://travis-ci.org
+    https://www.codeship.io
+    https://circleci.com
+
+如果自己架設的話，推薦老牌的Jenkins。
+
+=begin
+describe Product do
+  it "doesn't include backward compatibility in const_missing backtrace" do
+    exception = nil
+    begin
+      Abc.method
+    rescue Exception => exception
+    end
+    exception.backtrace.find { |l| l =~ /backward_compatibility/ }.should be_nil
+  end
+end
+
+RSpec.describe User do
+  it "should respond_to the method" do
+    bool = User.respond_to? :another_user?
+    bool.should eq(true)
+  end
+end
+
+
+describe "#let!" do
+  let!(:creator) do
+    Class.new do
+      @count = 0
+      def self.count
+        @count += 1
+      end
+    end
+  end
+
+  it "evaluates the value non-lazily" do
+    lambda { creator.count }.should_not raise_error
+  end
+
+  it "does not interfere between tests" do
+    creator.count.should eq(1)
+  end
+end
+=end
+

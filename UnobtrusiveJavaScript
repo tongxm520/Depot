@@ -1,0 +1,29 @@
+One of the big surprises and accomplishments is the fact that Unobtrusive Javascript made it
+into Rails 3. At first, we thought UJS wasn’t going to be included in Rails 3. Well, just
+before the first beta came out, the community responded well and a bunch of enthusiastic
+developers finished up one of the most wanted feature in Rails 3.
+
+Let’s see how easy it is to swap jQuery in Rails 3. In the root of a Rails 3 application, run:
+curl -L http://code.jquery.com/jquery-1.4.2.min.js > public/javascripts/jquery.js
+curl -L http://github.com/rails/jquery-ujs/raw/master/src/rails.js > public/javascripts/rails.js
+
+Here’s an initializer I got to know from Yehuda that you can define in config/initializers
+so javascript_include_tag :defaults uses jQuery instead of Prototype.
+
+module ActionView::Helpers::AssetTagHelper
+  remove_const :JAVASCRIPT_DEFAULT_SOURCES
+  JAVASCRIPT_DEFAULT_SOURCES = %w(jquery.js rails.js)
+  reset_javascript_include_default
+end
+
+With that set, Rails is now unaware of Prototype, all of the helpers with :remote => true
+will be grabbed by rails.js and worked through jQuery. You might also want to remove the
+Prototype libraries inside public/javascripts if you’re not going to use them.
+
+As you can see, UJS in Rails 3 is pretty easy. Though there is a bit of a configuration
+to be done if you’re going against the default option in Rails, it’s far easier to work with
+than in the previous versions. You should also look at the fantastic Rails 3 Release Notes
+for changes in the concerned helpers and the section on Unobtrusive Javascript in my article
+on RailsDispatch.
+
+
