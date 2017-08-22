@@ -14,6 +14,16 @@ Depot::Application.routes.draw do
     get :who_bought, :on => :member
   end
 
+  namespace :api do
+    namespace :v1 do
+      resources :sessions, only: [:create]
+      resources :users, only: [:index,:create,:show,:update,:destroy]
+      scope path: '/user/:user_id' do
+        resources :microposts, only: [:index]
+      end
+    end
+  end
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

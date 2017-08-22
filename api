@@ -1,0 +1,117 @@
+rails g controller api/v1/base --no-assets
+rails g controller api/v1/users --no-assets
+curl -i http://localhost:3000/api/v1/users/1.json
+
+增加认证(Authentication)
+
+认证的过程是这样的: 用户把她的用户名和密码通过 HTTP POST 请求发送到我们的 API (在这里我们使用 sessions 端点来处理这个请求), 如果用户名和密码匹配，我们 会把 token 发送给用户。 这个 token 就是用来证明用户身份的凭证。然后在以后的每个请求中，我们都通过这个 token 来查找用户，如果没有找到用户则返回 401 错误。
+
+rails g migration add_authentication_token_to_users
+
+和原文相比，我给 User 模型增加了一个 reset_auth_token! 方法，我这样做的理由主要有以下几点:
+我觉得需要有一个方法帮助用户重置 authentication token, 而不仅仅是在创建用户时生成 authenticeation token；
+如果用户的 token 被泄漏了，我们可以通过 reset_auth_token! 方法方便地重置用户 token
+
+rails g controller api/v1/sessions --no-assets
+
+现在我们还需要做一些原文没有提到的工作:
+给 User 模型增加和 password 相关的属性;
+给数据库中已存在的测试用户增加密码和 authentication token;
+实现和 current_user 相关的方法;
+实现 app/views/api/v1/sessions/create.json.jbuilder;
+配置和 sessions 相关的路由;
+
+
+curl -i -X POST -d "user[email]=simon@163.com&user[password]=admin123" http://localhost:3000/api/v1/sessions.json
+
+curl -i -X POST -d "user[email]=simon@163.com&user[password]=fakepwd" http://localhost:3000/api/v1/sessions.json
+
+ActionController::HttpAuthentication::Token 是rails自带的方法，可以参考 rails 文档 了解其详情。
+当我们通过 user_email 拿到 user 后, 通过 ActiveSupport::SecurityUtils.secure_compare
+对 user.authentication_token 和从请求头里取到的 token 进行比较，如果匹配则认证成功，否则返回
+unauthenticated!。这里使用了 secure_compare 对字符串进行比较，是为了防止时序攻击(timing attack)
+我们构造一个测试用例, 这个测试用例包括以下一些步骤:
+    用户登录成功, 服务端返回其 email, token 等数据
+    用户请求 API 更新其 name, 用户发送的 token 合法, 更新成功
+    用户请求 API 更新其 name, 用户发送的 token 非法, 更新失败
+为了让用户能够更新其 name, 我们需要实现 user update API, 并且加入 before_action :authenticate_user!, only: [:update]
+
+
+token=SecureRandom.base64(64)
+curl -i -X PUT -d "user[name]=victoria" --header "Authorization: Token token=yK2QgzrUkCFw8OqLSP9o/ce3k24m/qnsrn1g9DjVxRyRSngQrUElYgObreOnem3mWTcl8+xfjSugtbeBVogxGA==,email=simon@163.com" http://localhost:3000/api/v1/users/2
+
+curl -i -X PUT -d "user[name]=victoria&user[email]=simon@163.com" --header "Authorization: Token token=yK2QgzrUkCFw8OqLSP9o/ce3k24m/qnsrn1g9DjVxRyRSngQrUElYgObreOnem3mWTcl8+xfjSugtbeBVogxGA==" http://localhost:3000/api/v1/users/2
+
+
+token = ActionController::HttpAuthentication::Token.token_and_options(request)
+token后面带等号 解析后会舍弃等号 建议用token=SecureRandom.hex(32)
+
+token=SecureRandom.hex(32)
+curl -i -X PUT -d "user[name]=victoria&user[email]=simon@163.com" --header "Authorization: Token token=ef858d8ac8e0a64f9c5fcf58a6580291e8d1010d6fb7d176a0995a12d9483041" http://localhost:3000/api/v1/users/2
+
+
+curl -i -X PUT -d "user[name]=constantine&user[email]=simon@163.com" --header "Authorization: Token token=invalid token" http://localhost:3000/api/v1/users/2
+
+
+增加授权(Authorization)
+上面的测试有个问题，就是当前登录的用户可以把其他用户的 name 更新，这个应该是不被允许的，所以我们 还需要增加一个权限认证的机制。在这里我们使用 Pundit 来 实现权限认证。
+rails g pundit:install
+
+to guarantee/ensure current_user not nil,the 'api/v1/sessions.json' must be invoked first
+
+curl -i -X POST -d "user[email]=simon@163.com&user[password]=admin123" http://localhost:3000/api/v1/sessions.json
+
+fetch token first
+
+curl -i -X PUT -d "user[name]=jane&user[email]=simon@163.com" --header "Authorization: Token token=ef858d8ac8e0a64f9c5fcf58a6580291e8d1010d6fb7d176a0995a12d9483041" http://localhost:3000/api/v1/users/1
+
+curl -i -X PUT -d "user[name]=victoria&user[email]=simon@163.com" --header "Authorization: Token token=ef858d8ac8e0a64f9c5fcf58a6580291e8d1010d6fb7d176a0995a12d9483041" http://localhost:3000/api/v1/users/2
+
+======================================================
+class PrettyJsonResponse
+  def initialize(app)
+    @app = app
+  end
+
+  def call(env)
+    status, headers, response = @app.call(env)
+    if headers["Content-Type"] =~ /^application\/json/
+      obj = JSON.parse(response.body)
+      pretty_str = JSON.pretty_unparse(obj)
+      response = [pretty_str]
+      headers["Content-Length"] = pretty_str.bytesize.to_s
+    end
+    [status, headers, response]
+  end
+end
+
+replace the ActionController::Renderer for JSON! Just add the following code to your ApplicationController:
+
+ActionController::Renderers.add :json do |json, options|
+  unless json.kind_of?(String)
+    json = json.as_json(options) if json.respond_to?(:as_json)
+    json = JSON.pretty_generate(json, options)
+  end
+
+  if options[:callback].present?
+    self.content_type ||= Mime::JS
+    "#{options[:callback]}(#{json})"
+  else
+    self.content_type ||= Mime::JSON
+    json
+  end
+end
+======================================================
+rails g model Micropost
+rails g controller api/v1/microposts --no-assets
+
+我的数据库是mongoDB的，用kaminari分页时
+alarms_count = Alarm.page(2).count(true)
+count = Alarm.limit(5).count(true)
+
+curl -i -X GET http://localhost:3000/api/v1/user/2/microposts.json?per_page=3
+
+API 调用频率限制(Rate Limit)
+
+
+

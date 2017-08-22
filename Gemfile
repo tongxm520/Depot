@@ -31,6 +31,11 @@ end
 
 gem 'jquery-rails'
 
+gem 'jbuilder','1.0.0'
+gem 'strong_parameters', '0.2.3'
+gem 'pundit','1.0.0'
+gem 'kaminari','0.16.0'
+
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
 

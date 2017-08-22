@@ -1,7 +1,7 @@
 require 'digest/sha2'
 
 class User < ActiveRecord::Base
-  attr_accessible :hashed_password, :name, :salt
+  attr_accessible :hashed_password, :name, :salt,:email,:activated,:admin
   attr_accessor :password_confirmation
   attr_reader :password
 
@@ -10,10 +10,13 @@ class User < ActiveRecord::Base
   validate :password_must_be_present
 
   after_destroy :ensure_an_admin_remains
+  before_create :generate_authentication_token
+
+  has_many :microposts
   
   class << self
-    def authenticate(name, password)
-      user = self.find_by_name(name)
+    def authenticate(email, password)
+      user = self.find_by_email(email)
       if user
         expected_password = encrypt_password(password, user.salt)
         if user.hashed_password != expected_password
@@ -41,6 +44,18 @@ class User < ActiveRecord::Base
     if User.count.zero?
       raise "Can't delete last user"
     end
+  end
+
+  def generate_authentication_token
+    loop do
+      self.authentication_token=SecureRandom.hex(32)
+      break if !User.find_by_authentication_token(authentication_token)
+    end
+  end
+
+  def reset_auth_token!
+    generate_authentication_token
+    save
   end
   
   private
