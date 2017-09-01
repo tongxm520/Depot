@@ -91,7 +91,7 @@ $ /usr/sbin/mysqld --verbose --help | grep -A 1 'Default options'
 服务器首先会读取/etc/my.cnf文件，如果发现该文件不存在，再依次尝试从后面的几个路径进行读取。
 
 cd ~/
-sudo find / -name my.cnf -type f
+sudo find / -name "my.cnf" -type f
 
 
 >The server quit without updating PID file (/usr/local/mysql/data/ubuntu.pid).
@@ -127,7 +127,7 @@ There was an error while trying to load the gem 'coffee-rails'. (Bundler::GemReq
 
 
 在Depot外面找
-sudo find / -name *.rb|xargs grep 'last_comment'
+sudo find / -name "*.rb"|xargs grep 'last_comment'
 
 rails runner script/load_orders.rb
 

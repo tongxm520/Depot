@@ -2,10 +2,13 @@ require 'digest/sha2'
 
 class User < ActiveRecord::Base
   attr_accessible :hashed_password, :name, :salt,:email,:activated,:admin
+  attr_accessible :password_confirmation,:password
   attr_accessor :password_confirmation
   attr_reader :password
 
-  validates :name, :presence => true, :uniqueness => true
+  validates :name, :presence => true
+  validates :email, :presence => true, :uniqueness => true
+  validates :email, format: {with: /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, message: '请填写有效电子邮箱'}, :on => :create
   validates :password, :confirmation => true
   validate :password_must_be_present
 

@@ -1,8 +1,7 @@
-<%user=User.last%>
 <%100.times do |i|%>
 micropost_<%=(i+1).to_s%>:
   id: <%=i+1%>
-  user_id: <%=user.id%>
+  user_id: 2
   title: <%="title-#{i+1}"%>
   content: <%="content-#{i+1}"%>
 <%end%>

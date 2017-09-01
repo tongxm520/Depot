@@ -36,4 +36,7 @@ Depot::Application.configure do
   config.active_support.deprecation = :stderr
 
   config.middleware.use "PrettyJsonResponse"
+
+  config.logger = Logger.new(STDOUT)
+  config.logger.level = Logger::ERROR
 end

@@ -8,7 +8,17 @@ require 'rspec/autorun'
 # in spec/support/ and its subdirectories.
 Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
 
+module SpecTestHelper
+  def login_admin(user)
+    session[:user_id] = user.id
+  end
+end
+
 RSpec.configure do |config|
+  #config.include ActiveRecord::TestFixtures
+  config.global_fixtures = :all
+  config.include SpecTestHelper, type: :controller
+
   # ## Mock Framework
   #
   # If you prefer to use mocha, flexmock or RR, uncomment the appropriate line:
