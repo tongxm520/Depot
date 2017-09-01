@@ -37,8 +37,7 @@ rails generate rspec:install
 生成器创建了几个新文件，分别是：
 .rspec – 用于配置 rspec 命令行的配置文件，默认包含 – colour 来启用RSpec输出文字高亮。
 spec – 该目录用于存放所有模型变量，控制器，视图，和项目中其它的specs。
-spec/spec_helper.rb – 该文件会在每个spec执行时被调用。该文件设置了测试变量，并包含项目级别RSpec配置项，
-加载引用文件等等。
+spec/spec_helper.rb – 该文件会在每个spec执行时被调用。该文件设置了测试变量，并包含项目级别RSpec配置项，加载引用文件等等。
 
 
 4.此时运行： rails generate 你就会看到 rspece:install 这个生成器， 这是因为RSpec已经被注册为Rails的

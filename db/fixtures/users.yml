@@ -2,9 +2,9 @@
 one:
   id: 1
   name: dave
-  email: "tongxiaoming@gmail.com"
+  email: "dave@gmail.com"
   activated: <%=1.hours.ago%>
-  hashed_password: <%= User.encrypt_password('7366087', SALT) %>
+  hashed_password: <%= User.encrypt_password('8355724', SALT) %>
   salt: <%= SALT %>
   authentication_token: <%=SecureRandom.hex(32)%>
 two:
