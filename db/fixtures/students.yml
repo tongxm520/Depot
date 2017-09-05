@@ -1,0 +1,62 @@
+stu1:
+  id: 123
+  sName: "Amy"
+  GPA: 3.9
+  sizeHS: 1000
+stu2:
+  id: 234
+  sName: "Bob"
+  GPA: 3.6
+  sizeHS: 1500
+stu3:
+  id: 345
+  sName: "Craig"
+  GPA: 3.5
+  sizeHS: 500
+stu4:
+  id: 456
+  sName: "Doris"
+  GPA: 3.9
+  sizeHS: 1000
+stu5:
+  id: 567
+  sName: "Edward"
+  GPA: 2.9
+  sizeHS: 2000
+stu6:
+  id: 678
+  sName: "Fay"
+  GPA: 3.8
+  sizeHS: 200
+stu7:
+  id: 789
+  sName: "Gary"
+  GPA: 3.4
+  sizeHS: 800
+stu8:
+  id: 987
+  sName: "Helen"
+  GPA: 3.7
+  sizeHS: 800
+stu9:
+  id: 876
+  sName: "Irene"
+  GPA: 3.9
+  sizeHS: 400
+stu10:
+  id: 765
+  sName: "Jay"
+  GPA: 2.9
+  sizeHS: 1500
+stu11:
+  id: 654
+  sName: "Amy"
+  GPA: 3.9
+  sizeHS: 1000
+stu12:
+  id: 543
+  sName: "Craig"
+  GPA: 3.4
+  sizeHS: 2000
+
+

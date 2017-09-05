@@ -11,9 +11,26 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20170822051822) do
+ActiveRecord::Schema.define(:version => 20170904065127) do
+
+  create_table "applies", :force => true do |t|
+    t.integer  "student_id"
+    t.integer  "college_id"
+    t.string   "major"
+    t.boolean  "decision"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
 
   create_table "carts", :force => true do |t|
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  create_table "colleges", :force => true do |t|
+    t.string   "cName"
+    t.string   "state"
+    t.integer  "enrollment"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
   end
@@ -62,6 +79,14 @@ ActiveRecord::Schema.define(:version => 20170822051822) do
 
   add_index "sessions", ["session_id"], :name => "index_sessions_on_session_id"
   add_index "sessions", ["updated_at"], :name => "index_sessions_on_updated_at"
+
+  create_table "students", :force => true do |t|
+    t.string   "sName"
+    t.float    "GPA"
+    t.integer  "sizeHS"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
 
   create_table "users", :force => true do |t|
     t.string   "name"

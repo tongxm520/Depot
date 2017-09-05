@@ -1,0 +1,96 @@
+apply1:
+  student_id: 123
+  college_id: 1
+  major: "CS"
+  decision: true
+apply2:
+  student_id: 123
+  college_id: 1
+  major: "EE"
+  decision: false
+apply3:
+  student_id: 123
+  college_id: 2
+  major: "CS"
+  decision: true
+apply4:
+  student_id: 123
+  college_id: 4
+  major: "EE"
+  decision: true
+apply5:
+  student_id: 234
+  college_id: 2
+  major: "biology"
+  decision: false
+apply6:
+  student_id: 345
+  college_id: 3
+  major: "bioengineering"
+  decision: true
+apply7:
+  student_id: 345
+  college_id: 4
+  major: "bioengineering"
+  decision: false
+apply8:
+  student_id: 345
+  college_id: 4
+  major: "CS"
+  decision: true
+apply9:
+  student_id: 345
+  college_id: 4
+  major: "EE"
+  decision: false
+apply10:
+  student_id: 678
+  college_id: 1
+  major: "history"
+  decision: true
+apply11:
+  student_id: 987
+  college_id: 1
+  major: "CS"
+  decision: true
+apply12:
+  student_id: 987
+  college_id: 2
+  major: "CS"
+  decision: true
+apply13:
+  student_id: 876
+  college_id: 1
+  major: "CS"
+  decision: false
+apply14:
+  student_id: 876
+  college_id: 3
+  major: "biology"
+  decision: true
+apply15:
+  student_id: 876
+  college_id: 3
+  major: "marine biology"
+  decision: false
+apply16:
+  student_id: 765
+  college_id: 1
+  major: "history"
+  decision: true
+apply17:
+  student_id: 765
+  college_id: 4
+  major: "history"
+  decision: false
+apply18:
+  student_id: 765
+  college_id: 4
+  major: "psychology"
+  decision: true
+apply19:
+  student_id: 543
+  college_id: 3
+  major: "CS"
+  decision: false
+

@@ -142,5 +142,68 @@ restful API
 
 百度: online learning website
 #############################################################
+cd /usr/local/mysql/
+sudo ./support-files/mysql.server start
+
+##mysqld_safe --defaults-file=/home/simon/Desktop/Depot/config/my.cnf --user=mysql &
+
+##mysqld_safe --defaults-file=/etc/mysql/my.cnf --user=mysql &
+
+##warning: World-writable config file /home/simon/Desktop/Depot/config/my.cnf is ignored
+cd /home/simon/Desktop/Depot/config
+ll
+-rwxrwxrwx  1 root  root  1299 Nov 13  2016 my.cnf
+
+If the first part of the line looks like "-rw-rw-rw-" or "rwxrwxrwx", the file's permissions are "World-writable".
+To fix this problem, use the following command to change file's permissions
+
+sudo chmod 644 /home/simon/Desktop/Depot/config/my.cnf
+-rw-r--r--  1 root  root  1299 Nov 13  2016 my.cnf
+
+##mysql auto start on ubuntu
+1、cp /usr/local/MySQL/support-files/mysql.server /etc/init.d/mysql   将服务文件拷贝到init.d下，并重命名为mysql
+2、chmod +x /etc/init.d/mysql    赋予可执行权限
+3、chkconfig --add mysql        添加服务
+4、chkconfig --list             显示服务列表
+如果看到mysql的服务，并且3,4,5都是on的话则成功，如果是off，则键入
+chkconfig --level 345 mysql on
+5、reboot重启电脑
+6、netstat -na | grep 3306，如果看到有监听说明服务启动了
+
+
+###########################################################
+You should try hirb. It's a gem made to to pretty format objects in the ruby console. 
+>> require 'hirb'
+=> true
+>> Hirb.enable
+=> true
+>> ProductColor.first
++----+-------+---------------+---------------------+---------------------+
+| id | name  | internal_name | created_at          | updated_at          |
++----+-------+---------------+---------------------+---------------------+
+| 1  | White | White         | 2009-06-10 04:02:44 | 2009-06-10 04:02:44 |
++----+-------+---------------+---------------------+---------------------+
+1 row in set
+=> true
+
+
+Awesome print is nice too if you want an object indented. Something like:
+$ rails console
+rails> require "awesome_print"
+rails> ap Account.all(:limit => 2)
+[
+    [0] #<Account:0x1033220b8> {
+                     :id => 1,
+                :user_id => 5,            
+    },
+    [1] #<Account:0x103321ff0> {
+                     :id => 2,
+                :user_id => 4,
+    }
+]
+###########################################################
+
+
+
 
 

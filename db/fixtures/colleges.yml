@@ -1,0 +1,20 @@
+stan:
+  id: 1
+  cName: "Stanford"
+  state: "CA"
+  enrollment: 15000
+berkeley:
+  id: 2
+  cName: "Berkeley"
+  state: "CA"
+  enrollment: 36000
+mit:
+  id: 3
+  cName: "MIT"
+  state: "MA"
+  enrollment: 10000
+cornell:
+  id: 4
+  cName: "Cornell"
+  state: "NY"
+  enrollment: 21000	
