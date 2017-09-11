@@ -1,0 +1,36 @@
+Circle2.java:
+
+package p1;
+public class Circle2{
+	double radius;
+	Circle2(){
+	  radius = 1.0;
+	}
+}
+
+然后再另一个文件TestCircle2.java中调用
+package p1;
+public class TestCircle2{
+	public static void main(String[] args){
+	  Circle2 circle1=new Circle2();
+	  System.out.println("The area of the circle of radius"+circle1.radius+" is "+circle1.getArea());
+  }
+}
+
+->javac Circle2.java
+->javac TestCircle2.java 时显示找不到符号Circle2,这是什么原因了？ 
+
+假设你的目录结构是
+src 
+  -- p1
+    --Circle2.java
+    --TestCircle2.java
+
+cmd到src下
+/src>javac -d ./ p1/Circle2.java
+/src>javac -d ./ p1/TestCircle2.java
+/src>java p1.TestCircle2
+The area of the circle of radius1.0 is 1.0 
+
+
+

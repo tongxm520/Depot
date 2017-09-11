@@ -78,6 +78,18 @@ class Student < ActiveRecord::Base
     query=sanitize_sql(["SELECT id,sName FROM students WHERE RAND() * ? < 20 ORDER BY RAND() LIMIT 0,10", total_count])
     self.connection.execute(query)
   end
+
+  def self.get_avg_gpa_difference
+    query=sanitize_sql("select CS.avgGPA - NonCS.avgGPA
+from (select avg(GPA) as avgGPA from students
+      where id in (
+         select student_id from applies where major = 'CS')) as CS,
+     (select avg(GPA) as avgGPA from students
+      where id not in (
+         select student_id from applies where major = 'CS')) as NonCS")
+    self.connection.execute(query)
+    #[[0.19428573335920074]]
+  end
 end
 
 =begin

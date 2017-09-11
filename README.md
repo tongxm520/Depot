@@ -202,8 +202,51 @@ rails> ap Account.all(:limit => 2)
     }
 ]
 ###########################################################
+create_table :user_views do |t|
+  t.integer :user_id
+  t.integer :article_id
+end
 
+An easy way to do this in Rails is to use validates in your model with scoped uniqueness as follows:
+validates :user, uniqueness: { scope: :article }
 
+class AddUniqueIndexToReleases < ActiveRecord::Migration
+  def change
+    add_index :releases, [:country, :medium], unique: true
+  end
+end
 
+class Release < ActiveRecord::Base
+  validates :country, uniqueness: { scope: :medium }
+end
+
+###########################################################
+btoa('hujintao2013@gmail.com');
+atob('aHVqaW50YW8yMDEzQGdtYWlsLmNvbQ==');
+
+< btoa('mailto:email@example.com')
+< "bWFpbHRvOmVtYWlsQGV4YW1wbGUuY29t"
+
+'13zaxGVjj9MNc2jyvDRhLyYpkCh323MsMq'
+
+How to Reveal Passwords or any hidden information with asterisks in most of the pages?
+=>modify type from password to text
+###########################################################
+text = "intérnalionálização"
+ => "intérnalionálização"
+text.encoding
+ => #<Encoding:UTF-8>
+encoded = Base64.encode64(text)
+ => "aW50w6lybmFsaW9uw6FsaXphw6fDo28=\n"
+encoded.encoding
+ => #<Encoding:US-ASCII>
+decoded = Base64.decode64(encode)
+ => "int\xC3\xA9rnalion\xC3\xA1liza\xC3\xA7\xC3\xA3o"
+decoded.encoding
+ => #<Encoding:US-ASCII>
+decoded = decoded.force_encoding('UTF-8')
+ => "intérnalionálização"
+decoded.encoding
+ => #<Encoding:UTF-8>
 
 
