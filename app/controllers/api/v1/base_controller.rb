@@ -27,10 +27,7 @@ class Api::V1::BaseController < ApplicationController
 
     user_email = params[:user][:email]
     user = user_email && User.find_by_email(user_email)
-    #logger.info("user_email=>#{user_email};user=>#{user.inspect}")
-    #logger.info("token=>#{token}")
-    #logger.info("user_token=>#{user.authentication_token}")
-
+    
     if user && secure_compare(user.authentication_token, token[0])
       self.current_user = user
     else

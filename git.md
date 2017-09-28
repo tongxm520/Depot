@@ -56,10 +56,11 @@ Please make sure you have the correct access rights
 and the repository exists.
 #####################################################################
 Had similar issue. The root of the problem was that I followed some online tutorial about adding a new repository to Github.
-Just go to Github, create a new repo, it will ask you to add a README, don't add it. Create it, and you'll get instructions on how to push.
-It's similar to the next two lines:
-git remote add origin git@github.com:tongxm520/schoolify.git
-git push -u origin master
+
+##Just go to Github, create a new repo, it will ask you to add a README, don't add it. Create it, and you'll get instructions on how to push.
+##It's similar to the next two lines:
+##git remote add origin git@github.com:tongxm520/schoolify.git
+##git push -u origin master
 
 ----------------------------------------------------------------------
 create a new repository on the command line
