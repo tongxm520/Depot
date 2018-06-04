@@ -4,9 +4,11 @@ depot: &depot
   reconnect: false
   username: root
   password: "123456"
+  #password: "admin123"
   pool: 5
   #host: localhost
   socket: /tmp/mysql.sock
+  #socket: /web/docker/mysql/pid/mysqld.sock
 development:
   database: depot_dev
   <<: *depot

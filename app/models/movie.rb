@@ -35,17 +35,79 @@ class Movie < ActiveRecord::Base
   #Find the difference between the average rating of movies released before 1980 and the average rating of movies released after 1980. (Make sure to calculate the average rating for each movie, then the average of those averages for movies before 1980 and movies after. Don't just calculate the overall average rating before and after 1980.) 
   #mysql reserved words: before,after
   def self.get_difference
-    query=sanitize_sql("SELECT ABS(beforeYear.avgRating-afterYear.avgRating) AS difference FROM (SELECT AVG(x.avgBefore) AS avgRating FROM (SELECT AVG(R.stars) AS avgBefore FROM Rating R,Movie M WHERE R.mID=M.mID AND M.year<'1980' GROUP BY R.mID) AS x) AS beforeYear, (SELECT AVG(x.avgAfter) AS avgRating FROM (SELECT AVG(R.stars) AS avgAfter FROM Rating R,Movie M WHERE R.mID=M.mID AND M.year>'1980' GROUP BY R.mID) AS x) AS afterYear")
+    query=sanitize_sql(["SELECT ABS(beforeYear.avgRating-afterYear.avgRating) AS difference FROM (SELECT AVG(x.avgBefore) AS avgRating FROM (SELECT AVG(R.stars) AS avgBefore FROM Rating R,Movie M WHERE R.mID=M.mID AND M.year<? GROUP BY R.mID) AS x) AS beforeYear, (SELECT AVG(x.avgAfter) AS avgRating FROM (SELECT AVG(R.stars) AS avgAfter FROM Rating R,Movie M WHERE R.mID=M.mID AND M.year>? GROUP BY R.mID) AS x) AS afterYear",'1980','1980'])
     self.connection.execute(query)
     #rails mysql aggregation bigdecimal precision loss
     #Movie.get_difference.entries[0][0].to_s
   end
+
+  #Find the titles of all movies not reviewed by Chris Jackson. 
+  #SELECT title FROM Movie WHERE mID NOT IN(SELECT Rating.mID FROM `Rating` INNER JOIN `Reviewer` ON `Reviewer`.`rID` = `Rating`.`rID` WHERE (Reviewer.name='Chris Jackson'))
+  #Movie.not_reviewed_by
+  def self.not_reviewed_by
+    subquery=Rating.joins(:reviewer).where("Reviewer.name=?","Chris Jackson").select("Rating.mID").to_sql
+    query=sanitize_sql("SELECT title FROM Movie WHERE mID NOT IN(#{subquery})")
+    self.find_by_sql(query)
+  end
+
+  #List movie titles and average ratings, from highest-rated to lowest-rated. If two or more movies have the same average rating, list them in alphabetical order. 
+  def self.average_ratings
+    self.joins(:ratings).group("Rating.mID").
+    select("title,(SELECT  AVG(stars)
+            FROM  Rating
+            WHERE  mID = Movie.mID
+          ) AS avg_stars,MIN(stars) AS min_stars,MAX(stars) AS max_stars").
+    order("avg_stars,title")
+  end
+
+  #Some directors directed more than one movie. For all such directors, return the titles of all movies directed by them, along with the director name. Sort by director name, then movie title. (As an extra challenge, try writing the query both with and without COUNT.) 
+  def self.more_than_one
+    query="SELECT m1.title,m1.director FROM Movie m1,Movie m2 WHERE m1.director=m2.director AND m1.mID<>m2.mID ORDER BY m1.director,m1.title"
+    self.find_by_sql(sanitize_sql(query))
+  end
+
+  #Find the movie(s) with the highest average rating. Return the movie title(s) and average rating. (Hint: This query is more difficult to write in SQLite than other systems; you might think of it as finding the highest average rating and then choosing the movie(s) with that average rating.) 
+  def self.highest_average_rating
+    query="SELECT Rating.mID,AVG(stars) AS avgstars FROM Rating,Movie 
+    WHERE Movie.mID=Rating.mID 
+    GROUP BY Rating.mID
+    HAVING avgstars= (SELECT MAX(r.avg_stars) AS highest_avg_stars 
+    FROM (SELECT mID, AVG(stars) AS avg_stars
+    FROM Rating GROUP BY mID) AS r)"
+    self.find_by_sql(query)
+  end
+
+  def self.highest_average_rating_by_sort
+    self.joins(:ratings).group("Rating.mID").
+    select("title,(SELECT  AVG(stars)
+            FROM  Rating
+            WHERE  mID = Movie.mID
+          ) AS avg_stars").
+    order("avg_stars desc,title").limit(1)
+  end
+
+  #For each director, return the director's name together with the title(s) of the movie(s) they directed that received the highest rating among all of their movies, and the value of that rating. Ignore movies whose director is NULL. 
+  def self.highest_rating_movies
+  end
 end
 
 =begin
+
+You can't use avg that way. In my personal movie database,
+select * from movie having year > avg(year);
+produces nothing, and
+select * from movie having year > (select avg (year) from movie);
+produces the expected result.
+
+SELECT v.*
+  FROM (
+         SELECT 1 AS foo
+       ) v;
+
 两个数的差值
 the difference between the two numbers
 [数]差额,差值, 差分
+
 
 SELECT x.user, 
        AVG(x.cnt)
@@ -97,6 +159,12 @@ mysql> SELECT
 +----------------+-----------+-------+---------------------+
 2 rows in set (0.00 sec)
 
+
+You can make this easier if you generate the subquery separately and use a join instead of a correlated subquery:
+
+subquery = Schedule.select('MIN(price) as min_price, object_id').group(:object_id).to_sql
+Object.joins("JOIN (#{subquery}) schedules ON objects.p_id = schedules.object_id").
+select('objects.*, schedules.min_price).limit(5)
 
 =end
 

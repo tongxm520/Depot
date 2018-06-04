@@ -8,14 +8,14 @@ class Student < ActiveRecord::Base
     #.where(["id = ?", id]).select("name, website, city").first
   end
 
-  #SELECT sName,major FROM `students` RIGHT OUTER JOIN applies on applies.student_id=students.id
+  #SELECT sName,major,applies.college_id FROM `students` RIGHT OUTER JOIN applies ON applies.student_id=students.id ORDER BY sName desc,major asc
   def self.get_major
-    self.joins('RIGHT OUTER JOIN applies ON applies.student_id=students.id').select("sName,major").order("sName desc,major asc")
+    self.joins('RIGHT OUTER JOIN applies ON applies.student_id=students.id').select("sName,major,applies.college_id").order("sName desc,major asc")
   end
 
-  #SELECT students.sName,applies.major FROM `students` INNER JOIN `applies` ON `applies`.`student_id` = `students`.`id`
+  #SELECT students.sName,applies.major,applies.college_id FROM `students` INNER JOIN `applies` ON `applies`.`student_id` = `students`.`id` ORDER BY sName desc,major asc
   def self.student_major
-    self.joins(:applies).select("students.sName,applies.major")
+    self.joins(:applies).select("students.sName,applies.major,applies.college_id").order("sName desc,major asc")
   end
 
   #SELECT students.sName, count(applies.id) as applycount FROM `students` INNER JOIN `applies` ON `applies`.`student_id` = `students`.`id` GROUP BY applies.student_id
@@ -63,13 +63,15 @@ class Student < ActiveRecord::Base
 
   def self.test_sql_injection
     id="123 OR 1=1"
-    self.connection.execute("SELECT * FROM students WHERE id=#{id} ")
+    #self.connection.execute("SELECT * FROM students WHERE id=#{id}")
+    self.find_by_sql("SELECT * FROM students WHERE id=#{id}")
   end
 
   def self.secure_sql
     id="123 OR 1=1"
     query=sanitize_sql(["SELECT * FROM students WHERE id=?",id])
-    self.connection.execute(query)
+    #self.connection.execute(query)
+    self.find_by_sql(query)
   end
 
   #I am getting fast queries (around 0.5 seconds) with a slow cpu, selecting 10 random rows in a 400K registers MySQL database non-cached 2Gb size. 
