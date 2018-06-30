@@ -18,5 +18,67 @@ class Highschooler < ActiveRecord::Base
     query=sanitize_sql(["SELECT Highschooler.name AS friend,Friend.ID2 AS user_id,u.name AS user FROM Highschooler INNER JOIN Friend ON Highschooler.ID = Friend.ID1 INNER JOIN Highschooler AS u ON u.name=? WHERE Friend.ID2 = u.ID",name])
     self.find_by_sql(query)
   end
+
+  #For every student who likes someone 2 or more grades younger than themselves, return that student's name and grade, and the name and grade of the student they like. 
+  def self.younger_followees
+    query="SELECT Highschooler.name,Highschooler.grade,u.name AS followee_name,u.grade  AS followee_grade FROM Highschooler INNER JOIN Likes ON Highschooler.ID = Likes.ID1 INNER JOIN Highschooler AS u ON Highschooler.grade-u.grade>1 WHERE Likes.ID2 = u.ID"
+    self.find_by_sql(query)
+  end
+
+  #For every pair of students who both like each other, return the name and grade of both students. Include each pair only once, with the two names in alphabetical order. 
+  def self.like_each_other
+    query="SELECT t1.name from (
+		(SELECT DISTINCT ta.name FROM (SELECT Highschooler.name FROM Highschooler INNER JOIN Likes ON Highschooler.ID = Likes.ID1 WHERE Likes.ID2 IN (SELECT Highschooler.ID FROM Highschooler INNER JOIN Likes ON Highschooler.ID = Likes.ID1)) AS ta)
+		UNION ALL 
+		(SELECT DISTINCT tb.name FROM (SELECT Highschooler.name FROM Highschooler INNER JOIN Likes ON Highschooler.ID = Likes.ID2 WHERE Likes.ID1 IN (SELECT Highschooler.ID FROM Highschooler INNER JOIN Likes ON Highschooler.ID = Likes.ID2)) AS tb)
+	) AS t1 GROUP BY t1.name HAVING count(*) >= 2 ORDER BY t1.name"
+    self.find_by_sql(query)
+  end
+
+  #Find all students who do not appear in the Likes table (as a student who likes or is liked) and return their names and grades. Sort by grade, then by name within each grade.
+  def self.non_likes
+    query="SELECT t1.grade,t1.name from ((SELECT Highschooler.grade,Highschooler.name FROM Highschooler LEFT JOIN Likes ON Highschooler.ID = Likes.ID1 WHERE Likes.ID1 IS NULL)
+    UNION ALL
+    (SELECT Highschooler.grade,Highschooler.name FROM Highschooler LEFT JOIN Likes ON Highschooler.ID = Likes.ID2 WHERE Likes.ID2 IS NULL)) AS t1
+    GROUP BY t1.grade,t1.name HAVING count(*) >= 2 ORDER BY t1.grade,t1.name"
+    self.find_by_sql(query)
+  end
+
+  #For every situation where student A likes student B, but we have no information about whom B likes (that is, B does not appear as an ID1 in the Likes table), return A and B's names and grades. 
+  def self.final_point
+    query="SELECT Highschooler.name AS A_name,Highschooler.grade AS A_grade,u.name AS B_name,u.grade AS B_grade FROM Highschooler INNER JOIN Likes ON Highschooler.ID = Likes.ID1 INNER JOIN Highschooler AS u ON u.ID NOT IN (SELECT DISTINCT Likes.ID1 FROM Likes) WHERE Likes.ID2 = u.ID"
+    self.find_by_sql(query)
+  end
+
+  #Find names and grades of students who only have friends in the same grade. Return the result sorted by grade, then by name within each grade. 
+  def self.same_grade_friends
+    
+  end
 end
 
+=begin
+https://stackoverflow.com/questions/2621382/alternative-to-intersect-in-mysql
+
+Alternative to Intersect in MySQL
+
+There is a more effective way of generating an intersect, by using UNION ALL and GROUP BY. Performances are twice better according to my tests on large datasets.
+
+Example:
+
+SELECT t1.value from (
+  (SELECT DISTINCT value FROM table_a)
+  UNION ALL 
+  (SELECT DISTINCT value FROM table_b)
+) AS t1 GROUP BY t1.value HAVING count(*) >= 2;
+
+It is more effective, because with the INNER JOIN solution, MySQL will look up for the results of the first query, then for each row, look up for the result in the second query. With the UNION ALL-GROUP BY solution, it will query results of the first query, results of the second query, then group the results all together at once.
+
+
+CREATE TABLE `table_a` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `value` varchar(255),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+CREATE TABLE `table_b` LIKE `table_a`;
+=end
