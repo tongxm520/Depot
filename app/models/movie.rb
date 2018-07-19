@@ -68,7 +68,7 @@ class Movie < ActiveRecord::Base
 
   #Find the movie(s) with the highest average rating. Return the movie title(s) and average rating. (Hint: This query is more difficult to write in SQLite than other systems; you might think of it as finding the highest average rating and then choosing the movie(s) with that average rating.) 
   def self.highest_average_rating
-    query="SELECT Rating.mID,AVG(stars) AS avgstars FROM Rating,Movie 
+    query="SELECT Movie.title,AVG(stars) AS avgstars FROM Rating,Movie 
     WHERE Movie.mID=Rating.mID 
     GROUP BY Rating.mID
     HAVING avgstars= (SELECT MAX(r.avg_stars) AS highest_avg_stars 
@@ -86,7 +86,7 @@ class Movie < ActiveRecord::Base
     order("avg_stars desc,title").limit(1)
   end
 
-  #For each director, return the director's name together with the title(s) of the movie(s) they directed that received the highest rating among all of their movies, and the value of that rating. Ignore movies whose director is NULL. 
+  #TODO:For each director, return the director's name together with the title(s) of the movie(s) they directed that received the highest rating among all of their movies, and the value of that rating. Ignore movies whose director is NULL. 
   def self.highest_rating_movies
   end
 end

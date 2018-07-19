@@ -52,7 +52,31 @@ class Highschooler < ActiveRecord::Base
 
   #Find names and grades of students who only have friends in the same grade. Return the result sorted by grade, then by name within each grade. 
   def self.same_grade_friends
-    
+    query="SELECT DISTINCT name,grade 
+           FROM Highschooler INNER JOIN Friend 
+           ON Friend.ID1=Highschooler.ID
+           WHERE Highschooler.ID NOT IN 
+           (SELECT DISTINCT u1.ID FROM Highschooler AS u1,Friend,Highschooler AS u2 WHERE u1.ID=Friend.ID1 AND u2.ID=Friend.ID2 AND u1.grade<>u2.grade) 
+           GROUP BY grade,name"
+    self.find_by_sql(query)
+  end
+
+  #For each student A who likes a student B where the two are not friends, find if they have a friend C in common (who can introduce them!). For all such trios, return the name and grade of A, B, and C. 
+  def self.recommend_friends
+    query="SELECT DISTINCT a.name AS A_name,a.grade AS A_grade,b.name AS B_name,b.grade AS B_grade,c.name AS C_name,c.grade AS C_grade FROM Highschooler AS a,Likes,Friend AS f1,Friend AS f2,Highschooler AS b,Highschooler AS c WHERE NOT EXISTS (SELECT * FROM Friend WHERE ID1=a.ID AND ID2=b.ID OR ID1=b.ID AND ID2=a.ID) AND a.ID = Likes.ID1 AND Likes.ID2 = b.ID AND a.ID=f1.ID1 AND c.ID=f1.ID2 AND b.ID=f2.ID1 AND c.ID=f2.ID2"
+    self.find_by_sql(query)
+  end
+  
+  #Find the difference between the number of students in the school and the number of different first names. 
+  def self.duplicated_names_count
+    query="SELECT (SELECT COUNT(*) FROM Highschooler)-(SELECT COUNT(*) FROM Highschooler WHERE ID NOT IN (SELECT DISTINCT a.ID FROM Highschooler a,Highschooler b WHERE a.ID<>b.ID AND a.name=b.name)) AS difference"
+    self.find_by_sql(query)
+  end
+
+  #Find the name and grade of all students who are liked by more than one other student. 
+  def self.more_than_one
+    query="SELECT DISTINCT name,grade FROM Highschooler INNER JOIN Likes ON Likes.ID2 = Highschooler.ID WHERE (SELECT COUNT(*) FROM Likes WHERE ID2=Highschooler.ID) > 1"
+    self.find_by_sql(query)
   end
 end
 
