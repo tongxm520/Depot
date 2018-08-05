@@ -221,17 +221,6 @@ class Release < ActiveRecord::Base
 end
 
 ###########################################################
-btoa('hujintao2013@gmail.com');
-atob('aHVqaW50YW8yMDEzQGdtYWlsLmNvbQ==');
-
-< btoa('mailto:email@example.com')
-< "bWFpbHRvOmVtYWlsQGV4YW1wbGUuY29t"
-
-'13zaxGVjj9MNc2jyvDRhLyYpkCh323MsMq'
-
-How to Reveal Passwords or any hidden information with asterisks in most of the pages?
-=>modify type from password to text
-###########################################################
 text = "intérnalionálização"
  => "intérnalionálização"
 text.encoding
